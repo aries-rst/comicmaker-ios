@@ -112,12 +112,20 @@ if ar:
         r = requests.patch(B + f"/v1/ageRatingDeclarations/{ar['id']}", headers=H(), data=json.dumps({"data": {"type": "ageRatingDeclarations", "id": ar["id"], "attributes": at}}))
         if r.status_code < 300: print("age ok"); break
         print("age retry", r.status_code, r.text[:300])
-        u = re.search(r"Unknown attribute '?(\w+)", r.text)
+        u = re.search(r"Unknown attribute '?(\w+)", r.text); q = re.search(r"attribute '(\w+)' with this request", r.text)
         if u and u.group(1) in at: del at[u.group(1)]
+        elif q: at[q.group(1)] = False
         else: break
 # review notes
 rd = call("GET", f"/v1/appStoreVersions/{v}/appStoreReviewDetail").get("data")
+phone = None
+for other in call("GET", "/v1/apps?limit=50")["data"]:          # reuse the contact phone of the developer's other apps
+    for ov in call("GET", f"/v1/apps/{other['id']}/appStoreVersions?limit=3").get("data", []):
+        d = call("GET", f"/v1/appStoreVersions/{ov['id']}/appStoreReviewDetail").get("data")
+        if d and d["attributes"].get("contactPhone"): phone = d["attributes"]["contactPhone"]; break
+    if phone: break
 att = {"notes": NOTES, "demoAccountRequired": False, "contactEmail": "games.dev4u@gmail.com", "contactFirstName": "Rustamjon", "contactLastName": "Suvanqulov"}
+if phone: att["contactPhone"] = phone
 if rd: call("PATCH", f"/v1/appStoreReviewDetails/{rd['id']}", {"data": {"type": "appStoreReviewDetails", "id": rd["id"], "attributes": att}})
 else: call("POST", "/v1/appStoreReviewDetails", {"data": {"type": "appStoreReviewDetails", "attributes": att, "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": v}}}}})
 # screenshots (iPhone 6.5")
