@@ -5,7 +5,8 @@ import GoogleMobileAds
 import UserMessagingPlatform
 
 /// Same scheme as Android: banner under the editor + interstitial on save/share (not more often than every 90 s).
-/// Ads stay OFF until App Store approval (portfolio rule), then set ADS_ENABLED = true and rebuild.
+/// Ads stay OFF until App Store approval (portfolio rule). To enable: ADS_ENABLED = true, add NSUserTrackingUsageDescription
+/// back to project.yml (ATT prompt), update the App Privacy answers in App Store Connect, rebuild.
 enum AdManager {
     static let ADS_ENABLED = false
     static let BANNER_ID = "ca-app-pub-9638598348702189/6532851735"
