@@ -85,6 +85,7 @@ REGIONAL DIFFERENCES: none. REGULATED / THIRD-PARTY MATERIAL: none — all artwo
 app = [a for a in call("GET", f"/v1/apps?filter[bundleId]={BUNDLE}")["data"] if a["attributes"]["bundleId"] == BUNDLE]
 if not app: raise SystemExit("App record not found in App Store Connect — create it first")
 APP = app[0]["id"]; print("app", APP)
+call("PATCH", f"/v1/apps/{APP}", {"data": {"type": "apps", "id": APP, "attributes": {"contentRightsDeclaration": "DOES_NOT_USE_THIRD_PARTY_CONTENT"}}}); print("content rights ok")
 ai = call("GET", f"/v1/apps/{APP}/appInfos")["data"]
 info = ([a for a in ai if a["attributes"].get("appStoreState") in ("PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED")] or ai)[0]["id"]
 call("PATCH", f"/v1/appInfos/{info}", {"data": {"type": "appInfos", "id": info, "relationships": {
