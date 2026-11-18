@@ -107,14 +107,16 @@ for loc, t in (("en-US", EN), ("ru", RU)):
 ar = call("GET", f"/v1/appInfos/{info}/ageRatingDeclaration").get("data")
 if ar:
     at = {k: "NONE" for k in ["alcoholTobaccoOrDrugUseOrReferences", "contests", "gamblingSimulated", "horrorOrFearThemes", "matureOrSuggestiveThemes", "medicalOrTreatmentInformation", "profanityOrCrudeHumor", "sexualContentGraphicAndNudity", "sexualContentOrNudity", "violenceRealistic", "violenceRealisticProlongedGraphicOrSadistic"]}
-    at.update(violenceCartoonOrFantasy="INFREQUENT_OR_MILD", gambling=False, unrestrictedWebAccess=False, lootBox=False)
-    for _ in range(12):
+    at.update(violenceCartoonOrFantasy="INFREQUENT_OR_MILD", gunsOrOtherWeapons="INFREQUENT_OR_MILD", gambling=False, unrestrictedWebAccess=False, lootBox=False,
+              advertising=False, healthOrWellnessTopics=False, messagingAndChat=False, parentalControls=False, userGeneratedContent=False, socialMedia=False, ageAssurance=False)
+    for _ in range(25):
         r = requests.patch(B + f"/v1/ageRatingDeclarations/{ar['id']}", headers=H(), data=json.dumps({"data": {"type": "ageRatingDeclarations", "id": ar["id"], "attributes": at}}))
         if r.status_code < 300: print("age ok"); break
         print("age retry", r.status_code, r.text[:300])
         u = re.search(r"Unknown attribute '?(\w+)", r.text); q = re.search(r"attribute '(\w+)' with this request", r.text)
         if u and u.group(1) in at: del at[u.group(1)]
         elif q: at[q.group(1)] = False
+        elif "Expected a" in r.text and (t := re.search(r"attribute '(\w+)'", r.text)): at[t.group(1)] = "NONE"
         else: break
 # review notes
 rd = call("GET", f"/v1/appStoreVersions/{v}/appStoreReviewDetail").get("data")
